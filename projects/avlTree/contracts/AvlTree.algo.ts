@@ -1,57 +1,118 @@
+/* eslint-disable no-param-reassign */
+/* eslint-disable no-use-before-define */
+/* eslint-disable no-unused-vars */
 import { Contract } from '@algorandfoundation/tealscript';
 
+type Node = {
+  data: uint64;
+  left: Node | null;
+  right: Node | null;
+  height: uint64;
+};
+
+// eslint-disable-next-line no-unused-vars
 export class AvlTree extends Contract {
-  /**
-   * Calculates the sum of two numbers
-   *
-   * @param a
-   * @param b
-   * @returns The sum of a and b
-   */
-  private getSum(a: uint64, b: uint64): uint64 {
-    return a + b;
+  root = GlobalStateMap<uint64, Node>({
+    maxKeys: 1,
+    allowPotentialCollisions: false,
+  });
+
+  createApplication(root: Node): void {
+    this.root(0).value = root;
   }
 
-  /**
-   * Calculates the difference between two numbers
-   *
-   * @param a
-   * @param b
-   * @returns The difference between a and b.
-   */
-  private getDifference(a: uint64, b: uint64): uint64 {
-    return a >= b ? a - b : b - a;
+  // Utility function to return the height of the node
+  @abi.readonly
+  getHeight(node: Node): uint64 {
+    return node ? node.height : 0;
   }
 
-  /**
-   * A method that takes two numbers and does either addition or subtraction
-   *
-   * @param a The first uint64
-   * @param b The second uint64
-   * @param operation The operation to perform. Can be either 'sum' or 'difference'
-   *
-   * @returns The result of the operation
-   */
-  doMath(a: uint64, b: uint64, operation: string): uint64 {
-    let result: uint64;
-
-    if (operation === 'sum') {
-      result = this.getSum(a, b);
-    } else if (operation === 'difference') {
-      result = this.getDifference(a, b);
-    } else throw Error('Invalid operation');
-
-    return result;
+  private getBalanceFactor(node: Node): uint64 {
+    const res = this.getHeight(node.left!) - this.getHeight(node.right!);
+    return node ? res : 0;
   }
 
-  /**
-   * A demonstration method used in the AlgoKit fullstack template.
-   * Greets the user by name.
-   *
-   * @param name The name of the user to greet.
-   * @returns A greeting message to the user.
-   */
-  hello(name: string): string {
-    return 'Hello, ' + name;
+  private rightRotate(y: Node): Node {
+    const x = y.left!;
+    const T3 = x.right;
+
+    // rotate y -> x.right ; x.right -> y.left
+    x.right = y;
+    y.left = T3;
+
+    // update heights
+    y.height = Math.max(this.getHeight(y.left!), this.getHeight(y.right!)) + 1;
+    x.height = Math.max(this.getHeight(x.left!), this.getHeight(x.right)) + 1;
+
+    return x;
+  }
+
+  private leftRotate(x: Node): Node {
+    const y = x.right!;
+    const T2 = y.left;
+
+    // rotate x -> y.left ; y.left -> x.right
+    y.left = x;
+    x.right = T2;
+
+    x.height = Math.max(this.getHeight(x.left!), this.getHeight(x.right!)) + 1;
+    y.height = Math.max(this.getHeight(y.left), this.getHeight(y.right!)) + 1;
+
+    return y;
+  }
+
+  insert(node: Node | null, data: uint64): Node {
+    // standard BST insertion
+    if (!node) return { data, left: null, right: null, height: 1 };
+
+    if (data < node.data) {
+      node.left = this.insert(node.left, data);
+    } else if (data > node.data) {
+      node.right = this.insert(node.right, data);
+    } else {
+      return node;
+    }
+
+    node.height = 1 + Math.max(this.getHeight(node.left!), this.getHeight(node.right!));
+
+    const balance = this.getBalanceFactor(node);
+
+    if (balance > 1 && data < node.left!.data) {
+      return this.rightRotate(node);
+    }
+
+    if (balance < -1 && data < node.right!.data) {
+      return this.leftRotate(node);
+    }
+
+    if (balance > 1 && data > node.left!.data) {
+      node.left = this.leftRotate(node.left!);
+      return this.rightRotate(node);
+    }
+
+    if (balance < -1 && data > node.right!.data) {
+      node.right = this.rightRotate(node.right!);
+      return this.leftRotate(node);
+    }
+
+    return node;
+  }
+
+  @abi.readonly
+  inOrder(node: Node | null) {
+    if (node) {
+      this.inOrder(node.left);
+      log(itob(node.data));
+      this.inOrder(node.right);
+    }
+  }
+
+  add(data: uint64): void {
+    this.root(0).value = this.insert(this.root(0).value, data);
+  }
+
+  @abi.readonly
+  display(): void {
+    this.inOrder(this.root(0).value);
   }
 }
