@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AVL Tree Visualization</title>
+    <style>
+      /* Basic styles for the tree visualization */
+      .node {
+        text-align: center;
+        font-weight: bold;
+      }
+      .link {
+        stroke: #999;
+        stroke-width: 2px;
+      }
+      #tree-container {
+        overflow: auto; /* Allows scrolling if the tree overflows */
+        width: 100%;
+        height: 100vh;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>AVL Tree Visualization</h1>
+    <div id="tree-container"></div>
+
+    <!-- Import D3.js library -->
+    <script src="https://d3js.org/d3.v6.min.js"></script>
+    <script>
+      // JavaScript to visualize the tree using D3.js
+      function drawTree(treeData) {
+        // Set the dimensions of the SVG canvas
+        const width = 1200; // Increase this for larger trees
+        const height = 800; // Increase this for deeper trees
+
+        // Create an SVG element
+        const svg = d3.select('#tree-container').append('svg').attr('width', width).attr('height', height);
+
+        // Create a tree layout and assign the size
+        const treeLayout = d3.tree().size([width - 100, height - 100]); // Increase the size
+
+        // Convert the data to a hierarchy
+        const root = d3.hierarchy(treeData);
+
+        // Generate the tree layout
+        treeLayout(root);
+
+        // Add links between nodes
+        svg
+          .selectAll('.link')
+          .data(root.links())
+          .enter()
+          .append('line')
+          .attr('class', 'link')
+          .attr('x1', (d) => d.source.x)
+          .attr('y1', (d) => d.source.y)
+          .attr('x2', (d) => d.target.x)
+          .attr('y2', (d) => d.target.y);
+
+        // Add nodes
+        const nodes = svg
+          .selectAll('.node')
+          .data(root.descendants())
+          .enter()
+          .append('g')
+          .attr('class', 'node')
+          .attr('transform', (d) => `translate(${d.x},${d.y})`);
+
+        // Add circles for each node
+        nodes.append('circle').attr('r', 20).style('fill', '#69b3a2');
+
+        // Add labels
+        // Add labels
+        nodes
+          .append('text')
+          .attr('dy', 30) // Adjust this value to position the text below the nodes
+          .attr('text-anchor', 'middle')
+          .text((d) => d.data.data);
+      }
+
+      // Example tree data (this should be replaced with actual JSON from AVLTree)
+      const exampleTreeData = {
+        data: 15,
+        left: {
+          data: 5,
+          left: {
+            data: 3,
+            left: { data: 1, left: null, right: { data: 2, left: null, right: null } },
+            right: { data: 4, left: null, right: null },
+          },
+          right: { data: 7, left: null, right: null },
+        },
+        right: {
+          data: 40,
+          left: {
+            data: 25,
+            left: {
+              data: 20,
+              left: { data: 17, left: null, right: { data: 18, left: null, right: null } },
+              right: null,
+            },
+            right: {
+              data: 30,
+              left: { data: 27, left: null, right: null },
+              right: { data: 35, left: null, right: null },
+            },
+          },
+          right: {
+            data: 50,
+            left: { data: 45, left: null, right: { data: 48, left: null, right: null } },
+            right: { data: 60, left: { data: 55, left: null, right: null }, right: null },
+          },
+        },
+      }; /* Insert AVL Tree JSON data here */
+
+      // Call the drawTree function with the example tree data
+      drawTree(exampleTreeData);
+    </script>
+  </body>
+</html>
