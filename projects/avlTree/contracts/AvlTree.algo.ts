@@ -35,13 +35,14 @@ export class AvlTree extends Contract {
     return node === this.nullNode.value ? node.rightHeight : 0;
   }
 
-  private updateHeights(node: Node): void {
+  private updateHeights(node: Node): Node {
     node.leftHeight = this.getLeftHeight(node.left) + 1;
     node.rightHeight = this.getRightHeight(node.right) + 1;
+    return node;
   }
 
   private rightRotate(y: Node): Node {
-    const x = y.left;
+    let x = y.left;
     const T3 = x.right;
 
     // rotate y -> x.right ; x.right -> y.left
@@ -49,22 +50,22 @@ export class AvlTree extends Contract {
     y.left = T3;
 
     // update heights
-    this.updateHeights(y);
-    this.updateHeights(x);
+    y = this.updateHeights(y);
+    x = this.updateHeights(x);
 
     return x;
   }
 
   private leftRotate(x: Node): Node {
-    const y = x.right;
+    let y = x.right;
     const T2 = y.left;
 
     // rotate x -> y.left ; y.left -> x.right
     y.left = x;
     x.right = T2;
 
-    this.updateHeights(x);
-    this.updateHeights(y);
+    x = this.updateHeights(x);
+    y = this.updateHeights(y);
 
     return y;
   }
@@ -82,7 +83,7 @@ export class AvlTree extends Contract {
       return node;
     }
 
-    this.updateHeights(node);
+    node = this.updateHeights(node);
 
     // check balance by comparing left and right tree heights
     if (this.getLeftHeight(node) > this.getRightHeight(node) + 1) {
