@@ -1,22 +1,112 @@
-export const testInsertions: number[] = [
-  15, // Base insertion to build tree depth
-  5, // Left-side insertion, simple case
-  25, // Right-side insertion, simple case
-  3, // Left-Left unbalance
-  7, // Balance around left side
-  20, // Right-Left case
-  30, // Right-Right case to enforce left rotation
-  1, // Insert on extreme left
-  40, // Insert on extreme right, causing right skew
-  35, // Right-Left case in a right-heavy branch
-  50, // Another Right-Right case
-  45, // Right-heavy insertion, with left rotations
-  2, // Fills out the left side, close to root
-  60, // Extreme right-heavy node
-  17, // Left insertion around middle depth
-  27, // Balances around existing right side
-  55, // Higher-end value to continue right skew
-  4, // Balances small left side cases
-  48, // Mid-right insertion near large values
-  18, // Adds another node to test rotations at root
+export const testValues: number[] = [
+  120,
+  340,
+  98,
+  220,
+  150,
+  64,
+  430,
+  295,
+  510,
+  600, // Values to test balance between high and low numbers
+  11,
+  41,
+  73,
+  89,
+  22,
+  7,
+  96,
+  121,
+  56,
+  29, // Lower range, smaller numbers
+  985,
+  1001,
+  1020,
+  999,
+  1055,
+  1100,
+  1120,
+  1030, // Higher range to test upper bounds
+  78,
+  125,
+  140,
+  160,
+  210,
+  230,
+  255,
+  275,
+  300, // Middle range, filling tree layers
+  13,
+  24,
+  57,
+  66,
+  72,
+  89,
+  94,
+  101,
+  115,
+  132, // Testing tree depth with small increments
+  450,
+  480,
+  490,
+  550,
+  620,
+  630,
+  640,
+  670,
+  700, // Larger consecutive values
+  205,
+  218,
+  239,
+  258,
+  270,
+  295,
+  309,
+  325,
+  340, // Testing balance with mid-range values
+  5,
+  15,
+  25,
+  35,
+  45,
+  55,
+  65,
+  75,
+  85,
+  95, // Small range consecutive values
+  1010,
+  1045,
+  1075,
+  1095,
+  1115,
+  1135,
+  1160,
+  1180, // Higher values, even spacing
+  370,
+  380,
+  390,
+  400,
+  410,
+  420,
+  440,
+  450,
+  465, // Upper-middle range
+  480,
+  495,
+  505,
+  515,
+  525,
+  535,
+  545,
+  555,
+  565, // Slightly larger values in a consecutive range
+  575,
+  585,
+  595,
+  605,
+  615,
+  625,
+  635,
+  645,
+  655, // To further test height and depth balance
 ];

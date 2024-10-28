@@ -1,3 +1,4 @@
+/* eslint-disable no-plusplus */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable no-undef */
 /* eslint-disable no-console */
@@ -6,7 +7,7 @@
 /* eslint-disable class-methods-use-this */
 /* eslint-disable no-use-before-define */
 /* eslint-disable max-classes-per-file */
-import { testInsertions } from './tests';
+import { testValues } from './tests';
 
 type TreeNodeAVM = {
   data: number;
@@ -144,8 +145,32 @@ class AVLTreeAVM {
 // Test the AVLTree class
 const avl2 = new AVLTreeAVM();
 
-testInsertions.forEach((value) => avl2.add(value));
+testValues.forEach((value) => avl2.add(value));
 console.log('In-order Traversal of AVL Tree:');
 avl2.display();
 const treeJSON = avl2.toJSON();
 console.log(JSON.stringify(treeJSON));
+
+function getJsonSizeInBytes(jsonObject: any): number {
+  // Convert the JSON object to a string
+  const jsonString = JSON.stringify(jsonObject);
+
+  // Calculate the byte size of the JSON string
+  let byteSize = 0;
+  for (let i = 0; i < jsonString.length; i++) {
+    const charCode = jsonString.charCodeAt(i);
+    if (charCode < 0x80) {
+      byteSize += 1; // 1 byte for ASCII
+    } else if (charCode < 0x800) {
+      byteSize += 2; // 2 bytes for UTF-8 encoding
+    } else if (charCode < 0x10000) {
+      byteSize += 3; // 3 bytes for UTF-8 encoding
+    } else {
+      byteSize += 4; // 4 bytes for UTF-8 encoding
+    }
+  }
+
+  return byteSize;
+}
+
+console.log(getJsonSizeInBytes(treeJSON));

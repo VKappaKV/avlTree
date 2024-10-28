@@ -5,37 +5,34 @@ import { Contract } from '@algorandfoundation/tealscript';
 
 type Node = {
   data: uint64;
-  left: Node | null;
-  right: Node | null;
+  left: Node;
+  right: Node;
   leftHeight: uint64;
   rightHeight: uint64;
 };
 
+const nullNode: Node = castBytes<Node>(bzero(len<Node>()));
+
 // eslint-disable-next-line no-unused-vars
 export class AvlTree extends Contract {
-  root = GlobalStateMap<uint64, Node>({
-    maxKeys: 1,
-    allowPotentialCollisions: false,
-  });
+  root = BoxMap<uint64, Node>();
 
-  list = GlobalStateMap<uint64, uint64[]>({
-    maxKeys: 1,
-    allowPotentialCollisions: false,
-  });
+  nullNode = GlobalStateKey<Node>();
 
   createApplication(root: Node): void {
     this.root(0).value = root;
+    this.nullNode.value = nullNode;
   }
 
   // Utility function to return the height of the node
   @abi.readonly
-  getLeftHeight(node: Node | null): uint64 {
-    return node ? node.leftHeight : 0;
+  getLeftHeight(node: Node): uint64 {
+    return node === this.nullNode.value ? node.leftHeight : 0;
   }
 
   @abi.readonly
-  getRightHeight(node: Node | null): uint64 {
-    return node ? node.rightHeight : 0;
+  getRightHeight(node: Node): uint64 {
+    return node === this.nullNode.value ? node.rightHeight : 0;
   }
 
   private updateHeights(node: Node): void {
@@ -43,15 +40,8 @@ export class AvlTree extends Contract {
     node.rightHeight = this.getRightHeight(node.right) + 1;
   }
 
-  /*
-    private getBalanceFactor(node: Node): uint64 {
-    const res = this.getHeight(node.left!) - this.getHeight(node.right!);
-    return node ? res : 0;
-  }
- */
-
   private rightRotate(y: Node): Node {
-    const x = y.left!;
+    const x = y.left;
     const T3 = x.right;
 
     // rotate y -> x.right ; x.right -> y.left
@@ -66,7 +56,7 @@ export class AvlTree extends Contract {
   }
 
   private leftRotate(x: Node): Node {
-    const y = x.right!;
+    const y = x.right;
     const T2 = y.left;
 
     // rotate x -> y.left ; y.left -> x.right
@@ -79,9 +69,10 @@ export class AvlTree extends Contract {
     return y;
   }
 
-  insert(node: Node | null, data: uint64): Node {
+  insert(node: Node, data: uint64): Node {
     // standard BST insertion
-    if (!node) return { data, left: null, right: null, leftHeight: 1, rightHeight: 1 };
+    if (node === this.nullNode.value)
+      return { data, left: this.nullNode.value, right: this.nullNode.value, leftHeight: 1, rightHeight: 1 };
 
     if (data < node.data) {
       node.left = this.insert(node.left, data);
@@ -96,23 +87,23 @@ export class AvlTree extends Contract {
     // check balance by comparing left and right tree heights
     if (this.getLeftHeight(node) > this.getRightHeight(node) + 1) {
       // Left-heavy tree
-      if (data < node.left!.data) {
+      if (data < node.left.data) {
         // Left-left case
         return this.rightRotate(node);
       }
       // Left-right case
-      node.left = this.leftRotate(node.left!);
+      node.left = this.leftRotate(node.left);
       return this.rightRotate(node);
     }
 
     if (this.getRightHeight(node) > this.getLeftHeight(node) + 1) {
       // Right-heavy tree
-      if (data > node.right!.data) {
+      if (data > node.right.data) {
         // Right-right case
         return this.leftRotate(node);
       }
       // Right-left case
-      node.right = this.rightRotate(node.right!);
+      node.right = this.rightRotate(node.right);
       return this.leftRotate(node);
     }
 
@@ -120,8 +111,8 @@ export class AvlTree extends Contract {
   }
 
   @abi.readonly
-  inOrder(node: Node | null) {
-    if (node) {
+  inOrder(node: Node) {
+    if (node !== this.nullNode.value) {
       this.inOrder(node.left);
       log(itob(node.data));
       this.inOrder(node.right);
